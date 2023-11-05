@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 	"rm-hull/dedupe/internal"
-	"sync"
 
+	"github.com/gammazero/workerpool"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	gitignore "github.com/sabhiram/go-gitignore"
@@ -54,18 +54,17 @@ func main() {
 		panic("Error when fetching files: " + err.Error())
 	}
 
-	var wg sync.WaitGroup
+	numWorkers := 100
+	wp := workerpool.New(numWorkers)
 
 	numFiles := len(filenames)
 	bar := progressbar.Default(int64(numFiles), "[2/2] Indexing files")
 
-	wg.Add(numFiles)
 	defer db.Close()
 
 	for _, filename := range filenames {
 		localFilename := filename
-		go func() {
-			defer wg.Done()
+		wp.Submit(func() {
 			defer bar.Add(1)
 
 			file, err := internal.GetFileDetails(localFilename)
@@ -79,9 +78,9 @@ func main() {
 					panic(err) // FIXME: should be handled properly
 				}
 			}
-		}()
+		})
 	}
 
-	wg.Wait()
+	wp.StopWait()
 	bar.RenderBlank()
 }
