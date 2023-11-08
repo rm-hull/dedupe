@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -52,11 +51,6 @@ func InsertFileEntryStatement(db *sql.DB) (*sql.Stmt, error) {
 
 func CreateScan(db *sql.DB, root string) (*int64, error) {
 
-	absolutePath, err := filepath.Abs(root)
-	if err != nil {
-		return nil, err
-	}
-
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -66,7 +60,7 @@ func CreateScan(db *sql.DB, root string) (*int64, error) {
 	err = db.QueryRow(
 		"INSERT INTO scan "+
 			"(hostname, scan_status, root_directory) "+
-			"VALUES ($1, $2, $3) RETURNING id", hostname, InProgress.String(), absolutePath).Scan(&scanId)
+			"VALUES ($1, $2, $3) RETURNING id", hostname, InProgress.String(), root).Scan(&scanId)
 	if err != nil {
 		return nil, err
 	}

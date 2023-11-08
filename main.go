@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"rm-hull/dedupe/internal"
 
 	"github.com/gammazero/workerpool"
@@ -22,10 +23,14 @@ func WriteToDB(bar *progressbar.ProgressBar, scanId uuid.UUID, stmt *sql.Stmt, f
 func main() {
 	flag.Parse()
 	root := flag.Arg(0)
-
-	err := godotenv.Load()
+	absolutePath, err := filepath.Abs(root)
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Unable to obtain root path: %s", err.Error())
+	}
+
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file: %s", err.Error())
 	}
 
 	username := os.Getenv("PGUSER")
@@ -42,7 +47,7 @@ func main() {
 		log.Fatalf("Error when migrating the database: %s", err.Error())
 	}
 
-	scanId, err := internal.CreateScan(db, root)
+	scanId, err := internal.CreateScan(db, absolutePath)
 	if err != nil {
 		log.Fatalf("Error when creating scan: %s", err.Error())
 	}
@@ -54,7 +59,7 @@ func main() {
 
 	gitignore := gitignore.CompileIgnoreLines(".git", "node_modules", ".yarn", ".tox", ".venv/", ".ivy", "target/", "build/", "dist/", "*.pyc", "*.jar")
 
-	filenames, err := internal.GetFileNames(gitignore, root)
+	filenames, err := internal.GetFileNames(gitignore, absolutePath)
 	if err != nil {
 		panic("Error when fetching files: " + err.Error())
 	}
