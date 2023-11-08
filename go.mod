@@ -7,10 +7,14 @@ require github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 require (
 	github.com/gammazero/deque v0.2.0 // indirect
 	github.com/gammazero/workerpool v1.1.3 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
 )
 
 require (
+	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/uuid v1.4.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-runewidth v0.0.15 // indirect

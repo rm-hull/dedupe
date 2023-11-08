@@ -37,14 +37,19 @@ func main() {
 		log.Fatalf("Error when connecting to the database: %s", err.Error())
 	}
 
-	stmt, err := db.Prepare("INSERT INTO dedupe.file_entry (scan_id, name, size, mode, mod_time, is_dir, hash) VALUES ($1, $2, $3, $4, $5, $6, $7)")
+	err = internal.Migrate(db)
 	if err != nil {
-		log.Fatalf("Error when preparing statement: %s", err.Error())
+		log.Fatalf("Error when migrating the database: %s", err.Error())
 	}
 
-	scanId, err := uuid.NewRandom()
+	scanId, err := internal.CreateScan(db, root)
 	if err != nil {
-		log.Fatalf("Error when scan id: %s", err.Error())
+		log.Fatalf("Error when creating scan: %s", err.Error())
+	}
+
+	stmt, err := internal.InsertFileEntryStatement(db)
+	if err != nil {
+		log.Fatalf("Error when preparing statement: %s", err.Error())
 	}
 
 	gitignore := gitignore.CompileIgnoreLines(".git", "node_modules", ".yarn", ".git", ".tox", ".venv/", "target/", "build/", "dist/", "*.pyc")
