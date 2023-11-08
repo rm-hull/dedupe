@@ -52,14 +52,14 @@ func main() {
 		log.Fatalf("Error when preparing statement: %s", err.Error())
 	}
 
-	gitignore := gitignore.CompileIgnoreLines(".git", "node_modules", ".yarn", ".git", ".tox", ".venv/", "target/", "build/", "dist/", "*.pyc")
+	gitignore := gitignore.CompileIgnoreLines(".git", "node_modules", ".yarn", ".tox", ".venv/", ".ivy", "target/", "build/", "dist/", "*.pyc", "*.jar")
 
 	filenames, err := internal.GetFileNames(gitignore, root)
 	if err != nil {
 		panic("Error when fetching files: " + err.Error())
 	}
 
-	numWorkers := 100
+	numWorkers := 100 // 100 is good for macOS, not so good for Linux
 	wp := workerpool.New(numWorkers)
 
 	numFiles := len(filenames)
