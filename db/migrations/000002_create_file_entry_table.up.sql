@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS file_entry (
     mode BIGINT NOT NULL,
     mod_time TIMESTAMP WITH TIME ZONE NOT NULL,
     is_dir BOOLEAN NOT NULL,
-    hash VARCHAR(64) NOT NULL,
+    hash VARCHAR(32) NOT NULL,
     error CHARACTER VARYING
 );

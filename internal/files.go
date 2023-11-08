@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"crypto/sha256"
+	"crypto/md5"
 	"fmt"
 	"io"
 	"io/fs"
@@ -31,7 +31,7 @@ func (f *File) ToString() string {
 
 func GetFileNames(gitignore *gitignore.GitIgnore, root string) ([]string, error) {
 
-	files := make([]string, 0)
+	files := make([]string, 0, 2000)
 	bar := progressbar.Default(-1, "[1/2] Counting files")
 
 	visit := func(path string, dirEntry fs.DirEntry, err error) error {
@@ -73,7 +73,7 @@ func Hash(filename string) (string, error) {
 	}
 	defer f.Close()
 
-	h := sha256.New()
+	h := md5.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return "", err
 	}
