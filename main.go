@@ -25,12 +25,12 @@ func main() {
 	root := flag.Arg(0)
 	absolutePath, err := filepath.Abs(root)
 	if err != nil {
-		log.Fatal("Unable to obtain root path: %s", err.Error())
+		log.Fatalf("Unable to obtain root path: %s", err.Error())
 	}
 
 	err = godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file: %s", err.Error())
+		log.Fatalf("Error loading .env file: %s", err.Error())
 	}
 
 	username := os.Getenv("PGUSER")
