@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 	"runtime"
@@ -71,7 +70,7 @@ func main() {
 func initDatabase() (*sql.DB, error) {
 	err := godotenv.Load()
 	if err != nil {
-		return nil, fmt.Errorf("error loading .env file: %w", err)
+		return nil, err
 	}
 
 	username := os.Getenv("PGUSER")
@@ -80,12 +79,12 @@ func initDatabase() (*sql.DB, error) {
 
 	db, err := pg.Connect(username, password, host)
 	if err != nil {
-		return nil, fmt.Errorf("unable to connect to the database: %w", err)
+		return nil, err
 	}
 
 	err = pg.Migrate(db)
 	if err != nil {
-		return nil, fmt.Errorf("migration failed: %w", err)
+		return nil, err
 	}
 
 	return db, nil
