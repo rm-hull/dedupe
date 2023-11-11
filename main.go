@@ -1,90 +1,85 @@
 package main
 
 import (
-	"flag"
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"rm-hull/dedupe/internal"
 
-	"github.com/gammazero/workerpool"
+	"rm-hull/dedupe/internal"
+	pg "rm-hull/dedupe/internal/db"
+
 	"github.com/joho/godotenv"
-	gitignore "github.com/sabhiram/go-gitignore"
-	"github.com/schollz/progressbar/v3"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	flag.Parse()
-	root := flag.Arg(0)
-	absolutePath, err := filepath.Abs(root)
+	db, err := initDatabase()
 	if err != nil {
-		log.Fatalf("Unable to obtain root path: %s", err.Error())
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	app := &cli.App{
+		Name:                 "dedupe",
+		Version:              "1.0",
+		Copyright:            "(c) 2023 Richard Hull",
+		Usage:                "Scans and identifies duplicate files across machines and file-systems",
+		UsageText:            "...",
+		Suggest:              true,
+		EnableBashCompletion: true,
+		Authors: []*cli.Author{
+			{
+				Name:  "Richard Hull",
+				Email: "rm_hull@yahoo.co.uk",
+			},
+		},
+		Commands: []*cli.Command{
+			{
+				Name:  "scan",
+				Usage: "scans a filesystem path",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "path",
+						Aliases:  []string{"p"},
+						Required: true,
+						Usage:    "The file-system path to scan (can be absolute or relative)",
+					},
+				},
+				Action: func(cCtx *cli.Context) error {
+					fmt.Println("scan: ", cCtx.String("path"))
+					path := cCtx.String("path")
+					internal.Scan(db, path)
+					return nil
+				},
+			},
+		},
 	}
 
-	err = godotenv.Load()
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initDatabase() (*sql.DB, error) {
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %s", err.Error())
+		return nil, fmt.Errorf("error loading .env file: %w", err)
 	}
 
 	username := os.Getenv("PGUSER")
 	password := os.Getenv("PGPASSWORD")
 	host := os.Getenv("PGHOST")
 
-	db, err := internal.Connect(username, password, host)
+	db, err := pg.Connect(username, password, host)
 	if err != nil {
-		log.Fatalf("Error when connecting to the database: %s", err.Error())
+		return nil, fmt.Errorf("unable to connect to the database: %w", err)
 	}
 
-	err = internal.Migrate(db)
+	err = pg.Migrate(db)
 	if err != nil {
-		log.Fatalf("Error when migrating the database: %s", err.Error())
+		return nil, fmt.Errorf("migration failed: %w", err)
 	}
 
-	scanId, err := internal.CreateScan(db, absolutePath)
-	if err != nil {
-		log.Fatalf("Error when creating scan: %s", err.Error())
-	}
-
-	stmt, err := internal.InsertFileEntryStatement(db)
-	if err != nil {
-		log.Fatalf("Error when preparing statement: %s", err.Error())
-	}
-
-	gitignore := gitignore.CompileIgnoreLines(".git", "node_modules", ".yarn", ".tox", ".venv/", ".ivy", "target/", "build/", "dist/", "*.pyc", "*.jar")
-
-	filenames, err := internal.GetFileNames(gitignore, absolutePath)
-	if err != nil {
-		panic("Error when fetching files: " + err.Error())
-	}
-
-	numWorkers := 100 // 100 is good for macOS, not so good for Linux
-	wp := workerpool.New(numWorkers)
-
-	numFiles := len(filenames)
-	bar := progressbar.Default(int64(numFiles), "[2/2] Indexing files")
-
-	defer db.Close()
-
-	for _, filename := range filenames {
-		localFilename := filename
-		wp.Submit(func() {
-			defer bar.Add(1)
-
-			file, err := internal.GetFileDetails(localFilename)
-
-			if err != nil {
-				// TODO: log the error to the db
-				fmt.Println(err.Error())
-			} else {
-				_, err = stmt.Exec(scanId, file.Name, file.Size, file.Mode, file.ModTime, file.IsDir, file.Hash)
-				if err != nil {
-					panic(err) // FIXME: should be handled properly
-				}
-			}
-		})
-	}
-
-	wp.StopWait()
-	bar.RenderBlank()
+	return db, nil
 }
