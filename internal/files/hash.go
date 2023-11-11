@@ -8,16 +8,16 @@ import (
 )
 
 func Hash(filename string) (string, error) {
-	f, err := os.Open(filename)
+	file, err := os.Open(filename)
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
+	defer file.Close()
 
-	h := md5.New()
-	if _, err := io.Copy(h, f); err != nil {
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("%x", h.Sum(nil)), nil
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }

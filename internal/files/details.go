@@ -3,7 +3,7 @@ package files
 import "os"
 
 func GetFileDetails(filename string) (*File, error) {
-	fi, err := os.Lstat(filename)
+	fileInfo, err := os.Lstat(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -12,10 +12,10 @@ func GetFileDetails(filename string) (*File, error) {
 
 	file := &File{
 		Name:    filename,
-		Size:    fi.Size(),
-		Mode:    fi.Mode(),
-		ModTime: fi.ModTime(),
-		IsDir:   fi.IsDir(),
+		Size:    fileInfo.Size(),
+		Mode:    fileInfo.Mode(),
+		ModTime: fileInfo.ModTime(),
+		IsDir:   fileInfo.IsDir(),
 		Hash:    hash,
 	}
 

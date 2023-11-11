@@ -15,12 +15,12 @@ func Migrate(db *sql.DB) error {
 		return err
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://db/migrations", "postgres", driver)
+	migration, err := migrate.NewWithDatabaseInstance("file://db/migrations", "postgres", driver)
 	if err != nil {
 		return err
 	}
 
-	err = m.Up()
+	err = migration.Up()
 	if err != nil {
 		return err
 	}

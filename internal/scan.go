@@ -39,14 +39,14 @@ func Scan(db *sql.DB, path string, numWorkers int) error {
 		return fmt.Errorf("error when fetching files: %w", err)
 	}
 
-	wp := workerpool.New(numWorkers)
+	pool := workerpool.New(numWorkers)
 
 	numFiles := len(filenames)
 	bar2 := progressbar.Default(int64(numFiles), "[2/2] Indexing files")
 
 	for _, filename := range filenames {
 		localFilename := filename
-		wp.Submit(func() {
+		pool.Submit(func() {
 			defer func() {
 				err = bar2.Add(1)
 			}()
@@ -65,6 +65,6 @@ func Scan(db *sql.DB, path string, numWorkers int) error {
 		})
 	}
 
-	wp.StopWait()
+	pool.StopWait()
 	return nil
 }
