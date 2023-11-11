@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -10,15 +9,10 @@ import (
 	"rm-hull/dedupe/internal"
 
 	"github.com/gammazero/workerpool"
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	gitignore "github.com/sabhiram/go-gitignore"
 	"github.com/schollz/progressbar/v3"
 )
-
-func WriteToDB(bar *progressbar.ProgressBar, scanId uuid.UUID, stmt *sql.Stmt, filename string, ch chan<- *internal.File) {
-
-}
 
 func main() {
 	flag.Parse()
