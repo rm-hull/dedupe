@@ -1,0 +1,1 @@
+DROP VIEW IF EXISTS most_recent_scans_view;
