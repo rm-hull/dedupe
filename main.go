@@ -10,6 +10,7 @@ import (
 	"dedupe/internal"
 	pg "dedupe/internal/db"
 
+	"github.com/carlmjohnson/versioninfo"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
 )
@@ -23,7 +24,7 @@ func main() {
 
 	app := &cli.App{
 		Name:                 "dedupe",
-		Version:              "1.0",
+		Version:              versioninfo.Short(),
 		Copyright:            "(c) 2023 Richard Hull",
 		Usage:                "Scans and identifies duplicate files across machines and file-systems",
 		UsageText:            "...",
