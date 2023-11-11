@@ -8,8 +8,8 @@ import (
 func InsertFileEntryStatement(db *sql.DB) (*sql.Stmt, error) {
 	return db.Prepare(
 		"INSERT INTO file_entry " +
-			"(scan_id, name, size, mode, mod_time, is_dir, hash) " +
-			"VALUES ($1, $2, $3, $4, $5, $6, $7)")
+			"(scan_id, name, size, mode, mod_time, hash) " +
+			"VALUES ($1, $2, $3, $4, $5, $6)")
 }
 
 func CreateScan(db *sql.DB, root string) (*int64, error) {

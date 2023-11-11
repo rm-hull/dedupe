@@ -16,12 +16,11 @@ type File struct {
 	Size    int64
 	Mode    fs.FileMode
 	ModTime time.Time
-	IsDir   bool
 	Hash    string
 }
 
 func (f *File) ToString() string {
-	return fmt.Sprintf("%s (isDir=%t, size=%d, hash=%s)", f.Name, f.IsDir, f.Size, f.Hash)
+	return fmt.Sprintf("%s (size=%d, hash=%s)", f.Name, f.Size, f.Hash)
 }
 
 func GetFileNames(gitignore *gitignore.GitIgnore, root string, callback func() error) ([]string, error) {
@@ -31,7 +30,7 @@ func GetFileNames(gitignore *gitignore.GitIgnore, root string, callback func() e
 			err = callback()
 		}()
 
-		if !gitignore.MatchesPath(path) {
+		if !gitignore.MatchesPath(path) && !dirEntry.IsDir() {
 			files = append(files, path)
 		}
 		return err

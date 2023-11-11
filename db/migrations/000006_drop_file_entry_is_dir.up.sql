@@ -1,0 +1,1 @@
+ALTER TABLE file_entry DROP COLUMN IF EXISTS is_dir;

@@ -15,7 +15,6 @@ func GetFileDetails(filename string) (*File, error) {
 		Size:    fileInfo.Size(),
 		Mode:    fileInfo.Mode(),
 		ModTime: fileInfo.ModTime(),
-		IsDir:   fileInfo.IsDir(),
 		Hash:    hash,
 	}
 

@@ -64,7 +64,7 @@ func Scan(db *sql.DB, path string, numWorkers int) error {
 				// TODO: log the error to the db
 				fmt.Println(err.Error())
 			} else {
-				_, err = stmt.Exec(scanId, file.Name, file.Size, file.Mode, file.ModTime, file.IsDir, &file.Hash)
+				_, err = stmt.Exec(scanId, file.Name, file.Size, file.Mode, file.ModTime, &file.Hash)
 				if err != nil {
 					log.Fatal(err) // FIXME: should be handled properly
 				}
