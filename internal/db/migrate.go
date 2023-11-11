@@ -16,12 +16,12 @@ func Migrate(db *sql.DB) error {
 	}
 
 	migration, err := migrate.NewWithDatabaseInstance("file://db/migrations", "postgres", driver)
-	if err != nil && err != migrate.ErrNoChange {
+	if err != nil {
 		return err
 	}
 
 	err = migration.Up()
-	if err != nil {
+	if err != nil && err != migrate.ErrNoChange {
 		return err
 	}
 

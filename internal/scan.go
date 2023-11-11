@@ -3,6 +3,7 @@ package internal
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"path/filepath"
 
 	pg "dedupe/internal/db"
@@ -21,11 +22,6 @@ func Scan(db *sql.DB, path string, numWorkers int) error {
 		return fmt.Errorf("unable to obtain root path: %w", err)
 	}
 
-	scanId, err := pg.CreateScan(db, absolutePath)
-	if err != nil {
-		return fmt.Errorf("error when creating scan: %w", err)
-	}
-
 	stmt, err := pg.InsertFileEntryStatement(db)
 	if err != nil {
 		return fmt.Errorf("error when preparing insert statement: %w", err)
@@ -38,17 +34,28 @@ func Scan(db *sql.DB, path string, numWorkers int) error {
 	if err != nil {
 		return fmt.Errorf("error when fetching files: %w", err)
 	}
-
-	pool := workerpool.New(numWorkers)
-
 	numFiles := len(filenames)
+	pool := workerpool.New(numWorkers)
 	bar2 := progressbar.Default(int64(numFiles), "[2/2] Indexing files")
+
+	scanId, err := pg.CreateScan(db, absolutePath)
+	if err != nil {
+		return fmt.Errorf("error when creating scan: %w", err)
+	}
+
+	defer func() {
+		if err := pg.UpdateScan(db, *scanId, numFiles, err); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	for _, filename := range filenames {
 		localFilename := filename
 		pool.Submit(func() {
 			defer func() {
-				err = bar2.Add(1)
+				if err := bar2.Add(1); err != nil {
+					log.Fatal(err)
+				}
 			}()
 
 			file, err := files.GetFileDetails(localFilename)
@@ -57,9 +64,9 @@ func Scan(db *sql.DB, path string, numWorkers int) error {
 				// TODO: log the error to the db
 				fmt.Println(err.Error())
 			} else {
-				_, err = stmt.Exec(scanId, file.Name, file.Size, file.Mode, file.ModTime, file.IsDir, file.Hash)
+				_, err = stmt.Exec(scanId, file.Name, file.Size, file.Mode, file.ModTime, file.IsDir, &file.Hash)
 				if err != nil {
-					panic(err) // FIXME: should be handled properly
+					log.Fatal(err) // FIXME: should be handled properly
 				}
 			}
 		})

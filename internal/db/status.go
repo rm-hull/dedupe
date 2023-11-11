@@ -22,3 +22,11 @@ func (s ScanStatus) String() string {
 	}
 	return "unknown"
 }
+
+func GetCompletedScanStatus(err error) ScanStatus {
+	if err != nil {
+		return Errored
+	}
+
+	return Completed
+}

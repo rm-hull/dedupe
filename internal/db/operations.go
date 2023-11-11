@@ -30,3 +30,16 @@ func CreateScan(db *sql.DB, root string) (*int64, error) {
 
 	return &scanId, nil
 }
+
+func UpdateScan(db *sql.DB, scanId int64, filesScanned int, err error) error {
+	var errorMessage *string
+	if err != nil {
+		*errorMessage = err.Error()
+	}
+
+	_, err = db.Exec(
+		"UPDATE scan "+
+			"SET scan_status = $1, finished_at = NOW(), files_scanned = $2, error = $3 "+
+			"WHERE id = $4", GetCompletedScanStatus(err).String(), filesScanned, errorMessage, scanId)
+	return err
+}
