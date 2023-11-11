@@ -58,8 +58,7 @@ func main() {
 					fmt.Println("scan: ", cCtx.String("path"))
 					path := cCtx.String("path")
 					numWorkers := cCtx.Int("num-workers")
-					internal.Scan(db, path, numWorkers)
-					return nil
+					return internal.Scan(db, path, numWorkers)
 				},
 			},
 		},
