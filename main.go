@@ -46,11 +46,18 @@ func main() {
 						Required: true,
 						Usage:    "The file-system path to scan (can be absolute or relative)",
 					},
+					&cli.IntFlag{
+						Name:    "num-workers",
+						Aliases: []string{"n"},
+						Value:   getGoodWorkerCount(),
+						Usage:   "The number of workers to spit scanning into: 100 is good for macOS with a fast SSD, not so good for Linux with a spinnging HDD, where a value of 10 might be more appropriate",
+					},
 				},
 				Action: func(cCtx *cli.Context) error {
 					fmt.Println("scan: ", cCtx.String("path"))
 					path := cCtx.String("path")
-					internal.Scan(db, path)
+					numWorkers := cCtx.Int("num-workers")
+					internal.Scan(db, path, numWorkers)
 					return nil
 				},
 			},
@@ -83,4 +90,13 @@ func initDatabase() (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+
+func getGoodWorkerCount() int {
+	switch os := runtime.GOOS; os {
+	case "darwin":
+		return 100
+	default:
+		return 10
+	}
 }

@@ -14,7 +14,7 @@ import (
 	gitignore "github.com/sabhiram/go-gitignore"
 )
 
-func Scan(db *sql.DB, path string) error {
+func Scan(db *sql.DB, path string, numWorkers int) error {
 
 	absolutePath, err := filepath.Abs(path)
 	if err != nil {
@@ -39,7 +39,6 @@ func Scan(db *sql.DB, path string) error {
 		return fmt.Errorf("error when fetching files: %w", err)
 	}
 
-	numWorkers := 100 // 100 is good for macOS, not so good for Linux
 	wp := workerpool.New(numWorkers)
 
 	numFiles := len(filenames)
