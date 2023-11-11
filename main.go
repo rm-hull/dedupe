@@ -55,7 +55,6 @@ func main() {
 					},
 				},
 				Action: func(cCtx *cli.Context) error {
-					fmt.Println("scan: ", cCtx.String("path"))
 					path := cCtx.String("path")
 					numWorkers := cCtx.Int("num-workers")
 					return internal.Scan(db, path, numWorkers)
