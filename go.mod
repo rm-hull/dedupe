@@ -1,4 +1,4 @@
-module rm-hull/dedupe
+module dedupe
 
 go 1.21.3
 

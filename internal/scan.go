@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	pg "rm-hull/dedupe/internal/db"
-	"rm-hull/dedupe/internal/files"
+	pg "dedupe/internal/db"
+	"dedupe/internal/files"
 
 	"github.com/gammazero/workerpool"
 	"github.com/schollz/progressbar/v3"

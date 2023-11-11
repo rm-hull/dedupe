@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 
-	"rm-hull/dedupe/internal"
-	pg "rm-hull/dedupe/internal/db"
+	"dedupe/internal"
+	pg "dedupe/internal/db"
 
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
