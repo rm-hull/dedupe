@@ -24,10 +24,13 @@ func (f *File) ToString() string {
 	return fmt.Sprintf("%s (isDir=%t, size=%d, hash=%s)", f.Name, f.IsDir, f.Size, f.Hash)
 }
 
-func GetFileNames(gitignore *gitignore.GitIgnore, root string, callback func()) ([]string, error) {
+func GetFileNames(gitignore *gitignore.GitIgnore, root string, callback func() error) ([]string, error) {
 	files := make([]string, 0, 2000)
 	visit := func(path string, dirEntry fs.DirEntry, err error) error {
-		defer callback()
+		defer func() {
+			err = callback()
+		}()
+
 		if !gitignore.MatchesPath(path) {
 			files = append(files, path)
 		}

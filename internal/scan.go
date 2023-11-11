@@ -34,7 +34,7 @@ func Scan(db *sql.DB, path string, numWorkers int) error {
 	gitignore := gitignore.CompileIgnoreLines(".git", "node_modules", ".yarn", ".tox", ".venv/", ".ivy", "target/", "build/", "dist/", "*.pyc", "*.jar")
 	bar1 := progressbar.Default(-1, "[1/2] Counting files")
 
-	filenames, err := files.GetFileNames(gitignore, absolutePath, func() { bar1.Add(1) })
+	filenames, err := files.GetFileNames(gitignore, absolutePath, func() error { return bar1.Add(1) })
 	if err != nil {
 		return fmt.Errorf("error when fetching files: %w", err)
 	}
@@ -47,7 +47,9 @@ func Scan(db *sql.DB, path string, numWorkers int) error {
 	for _, filename := range filenames {
 		localFilename := filename
 		wp.Submit(func() {
-			defer bar2.Add(1)
+			defer func() {
+				err = bar2.Add(1)
+			}()
 
 			file, err := files.GetFileDetails(localFilename)
 
