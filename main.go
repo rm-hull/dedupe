@@ -46,6 +46,12 @@ func main() {
 						Required: true,
 						Usage:    "The file-system path to scan (can be absolute or relative)",
 					},
+					&cli.StringFlag{
+						Name:     "ignore",
+						Aliases:  []string{"i"},
+						Required: false,
+						Usage:    "An ignore file: any files matching regexes inside will be ignored on scanning. Same syntax & semantics as git-ignore",
+					},
 					&cli.IntFlag{
 						Name:    "num-workers",
 						Aliases: []string{"n"},
@@ -56,7 +62,8 @@ func main() {
 				Action: func(cCtx *cli.Context) error {
 					path := cCtx.String("path")
 					numWorkers := cCtx.Int("num-workers")
-					return internal.Scan(db, path, numWorkers)
+					ignore := cCtx.String("ignore")
+					return internal.Scan(db, path, numWorkers, ignore)
 				},
 			},
 		},

@@ -15,7 +15,18 @@ import (
 	gitignore "github.com/sabhiram/go-gitignore"
 )
 
-func Scan(db *sql.DB, path string, numWorkers int) error {
+var commonIgnores = []string{
+	// Javascript
+	"node_modules", ".yarn",
+	// Python
+	"*.pyc", ".tox", ".venv/",
+	// Java/Scala/Kotlin etc
+	"*.jar", "*.class", ".ivy", ".m2", ".sbt",
+	// Misc
+	".git", "target/", "build/", "dist/",
+}
+
+func Scan(db *sql.DB, path string, numWorkers int, ignorepath string) error {
 
 	absolutePath, err := filepath.Abs(path)
 	if err != nil {
@@ -27,10 +38,19 @@ func Scan(db *sql.DB, path string, numWorkers int) error {
 		return fmt.Errorf("error when preparing insert statement: %w", err)
 	}
 
-	gitignore := gitignore.CompileIgnoreLines(".git", "node_modules", ".yarn", ".tox", ".venv/", ".ivy", "target/", "build/", "dist/", "*.pyc", "*.jar")
+	var ignore *gitignore.GitIgnore
+	if ignorepath != "" {
+		ignore, err = gitignore.CompileIgnoreFileAndLines(ignorepath, commonIgnores...)
+		if err != nil {
+			return fmt.Errorf("error when compile ignore patterns: %w", err)
+		}
+	} else {
+		ignore = gitignore.CompileIgnoreLines(commonIgnores...)
+	}
+
 	bar1 := progressbar.Default(-1, "[1/2] Counting files")
 
-	filenames, err := files.GetFileNames(gitignore, absolutePath, func() error { return bar1.Add(1) })
+	filenames, err := files.GetFileNames(ignore, absolutePath, func() error { return bar1.Add(1) })
 	if err != nil {
 		return fmt.Errorf("error when fetching files: %w", err)
 	}
